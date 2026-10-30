@@ -1,0 +1,38 @@
+# Nightshift as a Databricks Asset Bundle.
+#
+# Everything that makes up the project (notebooks, the Lakeflow pipeline, the
+# nightly job) is defined here in code, so the whole thing can be deployed to a
+# fresh workspace with one command instead of clicking it together by hand:
+#
+#   databricks bundle deploy            # dev (default)
+#   databricks bundle run nightshift_nightly
+#
+# Works on Databricks Free Edition (serverless only, no cluster config needed).
+
+bundle:
+  name: nightshift
+
+include:
+  - resources/*.yml
+
+# Catalog and schema are variables instead of being hardcoded, so the same code
+# can run in a different catalog or a separate dev schema without edits.
+variables:
+  catalog:
+    description: Unity Catalog catalog for all Nightshift tables and the raw_logs volume
+    default: workspace
+  schema:
+    description: Schema for all Nightshift tables and the raw_logs volume
+    default: nightshift
+
+targets:
+  # Development mode prefixes job and pipeline names with "[dev <user>]",
+  # pauses schedules, and runs the pipeline in development mode.
+  dev:
+    mode: development
+    default: true
+
+  prod:
+    mode: production
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

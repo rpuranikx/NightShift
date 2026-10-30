@@ -1,0 +1,63 @@
+# The whole morning chain as one Lakeflow Job.
+#
+# In a real lab the benches finish around 6 AM and the report should be waiting
+# when people get in, so the job runs at 6:00 Chicago time. It ships paused:
+# un-pause it in the Jobs UI (or deploy to prod) when you want it running daily.
+#
+# Each step is its own task so a failure shows exactly where it broke, and a
+# rerun can start from the failed task instead of from scratch.
+
+resources:
+  jobs:
+    nightshift_nightly:
+      name: nightshift_nightly
+
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: America/Chicago
+        pause_status: PAUSED
+
+      # Job parameters are passed to every notebook task as widgets.
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+
+      tasks:
+        - task_key: setup
+          notebook_task:
+            notebook_path: ../src/00_setup.py
+
+        # Stands in for the benches. Skips itself once the raw logs exist,
+        # so nightly runs don't regenerate the same 30 nights.
+        - task_key: generate_logs
+          depends_on: [{ task_key: setup }]
+          notebook_task:
+            notebook_path: ../src/01_generate_logs.py
+
+        - task_key: bronze_ingest
+          depends_on: [{ task_key: generate_logs }]
+          notebook_task:
+            notebook_path: ../src/02_bronze_ingest.py
+
+        - task_key: silver_gold
+          depends_on: [{ task_key: bronze_ingest }]
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.nightshift_pipeline.id}
+
+        # Data checks before anything downstream trusts the gold tables.
+        - task_key: check_gold
+          depends_on: [{ task_key: silver_gold }]
+          notebook_task:
+            notebook_path: ../src/checks/check_gold_tables.py
+
+        - task_key: triage_model
+          depends_on: [{ task_key: check_gold }]
+          notebook_task:
+            notebook_path: ../src/03_triage_model.py
+
+        - task_key: morning_agent
+          depends_on: [{ task_key: triage_model }]
+          notebook_task:
+            notebook_path: ../src/04_morning_agent.py

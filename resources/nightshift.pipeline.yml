@@ -1,0 +1,20 @@
+# Silver and gold layers as one Lakeflow Declarative Pipeline.
+#
+# Why a pipeline instead of more notebooks: the SQL only says what each table
+# should contain. Lakeflow works out the order (silver before gold), handles
+# refreshes, and tracks the data quality expectations in silver so the event
+# log shows how many rows were dropped or flagged each run.
+
+resources:
+  pipelines:
+    nightshift_pipeline:
+      name: nightshift_pipeline
+      catalog: ${var.catalog}
+      schema: ${var.schema}   # default schema, so the SQL doesn't hardcode table locations
+      serverless: true
+      channel: CURRENT
+      libraries:
+        - file:
+            path: ../src/pipelines/silver.sql
+        - file:
+            path: ../src/pipelines/gold.sql
