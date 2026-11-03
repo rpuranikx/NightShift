@@ -1,0 +1,12 @@
+resources:
+  pipelines:
+    nightshift_pipeline:
+      name: nightshift_pipeline
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      serverless: true
+      libraries:
+        - file:
+            path: ../src/pipelines/silver.sql
+        - file:
+            path: ../src/pipelines/gold.sql

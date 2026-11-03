@@ -1,0 +1,16 @@
+bundle:
+  name: nightshift
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    default: workspace
+  schema:
+    default: nightshift
+
+targets:
+  dev:
+    mode: development
+    default: true
