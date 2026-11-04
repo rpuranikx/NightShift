@@ -1,10 +1,10 @@
-# Nightshift
+# NightShift
 
 Morning triage for hardware test labs, built on Databricks.
 
-**Demo site:** https://rpuranikx.github.io/nightshift/
+**Demo site:** https://rpuranikx.github.io/NightShift/
 
-In my lab, benches run test suites overnight. Every morning we spend the first hours of the day going through the failures one by one, reading logs and screenshots, and deciding whether each one is a real defect or noise before we can write anything up. Nightshift does that analysis before anyone gets in, so writing the report takes minutes and the early-morning brainpower goes to the failures that actually matter.
+In my lab, benches run test suites overnight. Every morning we spend the first hours of the day going through the failures one by one, reading logs and screenshots, and deciding whether each one is a real defect or noise before we can write anything up. NightShift does that analysis before anyone gets in, so writing the report takes minutes and the early-morning brainpower goes to the failures that actually matter.
 
 It loads raw bench logs into a lakehouse, cleans them, sorts every failure into script, framework, hardware or real defect with an ML model, and has an LLM agent write the morning report.
 

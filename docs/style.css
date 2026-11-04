@@ -266,3 +266,10 @@ h1, h2, h3 { color: var(--ink); font-weight: 600; letter-spacing: -0.02em; text-
 /* the film */
 .film-frame { border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: #03090C; box-shadow: 0 40px 100px -40px rgba(0,0,0,.7); }
 .film-frame video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #03090C; }
+
+/* the hero is now the film: full width, its own aspect, starting under the nav */
+.hero { height: auto; min-height: 0; padding-top: 64px; background: #03090C; }
+.hero video { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: calc(100svh - 64px); object-fit: contain; background: #03090C; }
+.hero .replay { bottom: 24px; }
+@media (max-aspect-ratio: 1/1) { .hero video { aspect-ratio: 4 / 5; } }
+@media (max-width: 720px) { .hero { padding-top: 54px; } .hero .replay { left: auto; right: 16px; bottom: 16px; } }

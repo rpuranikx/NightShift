@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nightshift: morning triage for hardware test labs</title>
-<meta name="description" content="Nightshift sorts last night's test bench failures into script, framework, hardware and real defect, and writes the morning report before anyone gets in. Built on Databricks by Rishi Puranik.">
-<meta property="og:title" content="Nightshift">
+<title>NightShift: morning triage for hardware test labs</title>
+<meta name="description" content="NightShift sorts last night's test bench failures into script, framework, hardware and real defect, and writes the morning report before anyone gets in. Built on Databricks by Rishi Puranik.">
+<meta property="og:title" content="NightShift">
 <meta property="og:description" content="Last night's test failures, sorted before anyone gets in. Built on Databricks.">
 <meta name="theme-color" content="#0B2026">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B2026'/%3E%3Crect x='7' y='17' width='6' height='6' fill='%23FF3621'/%3E%3Crect x='15' y='17' width='6' height='6' fill='%233CF5C8'/%3E%3Crect x='15' y='9' width='6' height='6' fill='%233CF5C8'/%3E%3C/svg%3E">
@@ -17,24 +17,23 @@
 <body>
 
 <header class="nav">
-  <a class="mark" href="#top">Night<span>shift</span></a>
+  <a class="mark" href="#top">Night<span>Shift</span></a>
   <nav>
-    <a href="#watch">Watch</a>
     <a href="#how">How it works</a>
     <a href="#decisions">Decisions</a>
     <a href="#use">Use it</a>
-    <a class="gh" href="https://github.com/rpuranikx/nightshift">GitHub</a>
+    <a class="gh" href="https://github.com/rpuranikx/NightShift">GitHub</a>
   </nav>
 </header>
 
-<!-- ================= HERO: the story in 30 seconds ================= -->
+<!-- ================= HERO: the story in 50 seconds ================= -->
 <section class="hero" id="top">
-  <canvas id="c" aria-label="Animation: fifteen test benches fail overnight. Before Nightshift, an engineer reviews the failures one at a time and gets through 14 of 61 by 09:50. The morning rewinds. After Nightshift, all 61 are sorted into script, framework, hardware and real defect by 06:04 while he drinks coffee."></canvas>
-  <div class="vignette"></div>
-  <div class="hero-top"><div class="clock" id="clock">22:00</div></div>
-  <div class="chapter" id="chapter"><span id="chapterName">BEFORE NIGHTSHIFT</span><strong id="chapterClock">06:00</strong><span class="count" id="chapterCount"></span></div>
-  <p class="caption" id="caption"></p>
-  <button class="replay" id="replay">Replay</button>
+  <video id="film" autoplay muted loop playsinline preload="auto" poster="media/nightshift-story.jpg"
+    aria-label="Film: fifteen test benches fail overnight and an engineer reviews them by hand, getting through 14 of 61 before the 9:30 standup. Then the same night with NightShift: a robot sorts every failure at 2 AM, the report is waiting at 6:00, and standup starts with actions assigned.">
+    <source src="media/nightshift-story-4x5.mp4" type="video/mp4" media="(max-aspect-ratio: 1/1)">
+    <source src="media/nightshift-story.mp4" type="video/mp4">
+  </video>
+  <button class="replay" id="playpause" aria-label="Pause the film">Pause</button>
 </section>
 
 <main>
@@ -45,24 +44,13 @@
   <h1>Last night's test failures, sorted before anyone gets&nbsp;in.</h1>
   <div class="intro-body">
     <p>In my lab, benches run test suites overnight. Every morning we spend the first hours going through the failures one by one, reading logs and screenshots, deciding whether each one is a real defect or noise before we can write anything up.</p>
-    <p>Nightshift does that sorting overnight. It loads the raw bench logs into a lakehouse, cleans them, sorts every failure with an ML model, and has an LLM agent write the morning report. The engineers start the day on the failures that matter.</p>
+    <p>NightShift does that sorting overnight. It loads the raw bench logs into a lakehouse, cleans them, sorts every failure with an ML model, and has an LLM agent write the morning report. The engineers start the day on the failures that matter.</p>
   </div>
   <div class="ctas">
     <a class="btn primary" href="#use">Run it on your lab's data</a>
-    <a class="btn" href="https://github.com/rpuranikx/nightshift">Read the code</a>
+    <a class="btn" href="https://github.com/rpuranikx/NightShift">Read the code</a>
   </div>
   <p class="note">The data is synthetic, modeled on the benches I work with. No company data is used.</p>
-</section>
-
-<!-- ================= THE FILM ================= -->
-<section class="wrap section film" id="watch">
-  <div class="sec-head">
-    <h2>The 50-second version</h2>
-    <p>One night in the lab, two mornings. First by hand, then with Nightshift.</p>
-  </div>
-  <figure class="film-frame">
-    <video src="media/nightshift-story.mp4" poster="media/nightshift-story.jpg" controls playsinline preload="none"></video>
-  </figure>
 </section>
 
 <!-- ================= PROBLEM ================= -->
@@ -134,7 +122,7 @@
       <figcaption>Asking the agent follow-up questions about the report.</figcaption>
     </figure>
     <article class="report" aria-label="Sample morning report">
-      <header><span class="mark small">Night<span>shift</span></span><span>Morning report · 15 benches</span></header>
+      <header><span class="mark small">Night<span>Shift</span></span><span>Morning report · 15 benches</span></header>
       <h3>Summary</h3>
       <p>DUO&#8209;03 had a pass rate of 85.5% last night, down from its 7&#8209;night average of 92.6%, with 16 hardware ADB failures. Example error: <code>error: device offline (hil-pc-11-d2)</code>.</p>
       <h3 class="o">Hardware attention</h3>
@@ -233,7 +221,7 @@
     <p>For the analysis, yes. 64,000 log lines fit in pandas on a laptop, and I could have found all three planted problems in an afternoon. But finding them once isn't the job. The job is a report waiting every morning, from logs that keep arriving, that people can trust and act on.</p>
   </div>
   <div class="compare" role="table" aria-label="Notebook compared with Databricks">
-    <div class="crow head" role="row"><span role="columnheader">The job needs</span><span role="columnheader">A notebook on my laptop</span><span role="columnheader">Nightshift on Databricks</span></div>
+    <div class="crow head" role="row"><span role="columnheader">The job needs</span><span role="columnheader">A notebook on my laptop</span><span role="columnheader">NightShift on Databricks</span></div>
     <div class="crow" role="row"><span role="cell">Run every night without me</span><span role="cell">Runs when I open it</span><span role="cell">One job, in order, stops and reruns from the failed step</span></div>
     <div class="crow" role="row"><span role="cell">Handle new logs every night</span><span role="cell">Rereads everything, or I write my own bookkeeping</span><span role="cell">Auto Loader reads only new files, reruns never duplicate</span></div>
     <div class="crow" role="row"><span role="cell">Keep bad data out of the report</span><span role="cell">Checks run if I remember to</span><span role="cell">Pipeline expectations and gold checks on every run</span></div>
@@ -259,15 +247,15 @@
 <section class="wrap section" id="use">
   <div class="sec-head">
     <h2>Run it on your lab's data</h2>
-    <p>If you run a hardware test lab, you can point Nightshift at your own logs. It runs on Databricks Free Edition. Out of the box it generates a demo lab, so start there, then swap in your data.</p>
+    <p>If you run a hardware test lab, you can point NightShift at your own logs. It runs on Databricks Free Edition. Out of the box it generates a demo lab, so start there, then swap in your data.</p>
   </div>
 
   <ol class="steps">
     <li>
       <h3>Deploy the demo</h3>
       <p>Clone the repo and deploy the bundle. The first run builds a 15-bench demo lab so you can see the whole thing work end to end, report included.</p>
-<pre><code>git clone https://github.com/rpuranikx/nightshift
-cd nightshift
+<pre><code>git clone https://github.com/rpuranikx/NightShift
+cd NightShift
 databricks auth login --host https://&lt;your-workspace&gt;.cloud.databricks.com
 databricks bundle deploy
 databricks bundle run nightshift_nightly</code></pre>
@@ -343,17 +331,15 @@ DUO-03,2,molex,HIL-PC-11,Lab B,2025-03-02</code></pre>
 
 <footer class="foot wrap">
   <div>
-    <a class="mark" href="#top">Night<span>shift</span></a>
+    <a class="mark" href="#top">Night<span>Shift</span></a>
     <p>Built by Rishi Puranik. I build the Python framework we use for embedded hardware testing, and this is the tool I wish we had every morning.</p>
   </div>
   <nav>
-    <a href="https://github.com/rpuranikx/nightshift">Code on GitHub</a>
+    <a href="https://github.com/rpuranikx/NightShift">Code on GitHub</a>
     <a href="https://github.com/rpuranikx">More of my work</a>
   </nav>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="hero.js"></script>
 <script src="site.js"></script>
 </body>
 </html>
