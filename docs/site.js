@@ -5,7 +5,7 @@
   const hero = document.querySelector('.hero');
   new IntersectionObserver(([e]) => nav.classList.toggle('solid', !e.isIntersecting), { rootMargin: '-64px 0px 0px 0px' }).observe(hero);
 
-  const targets = document.querySelectorAll('.intro, .sec-head, .causes, .flow, .loop-note, .report-grid, .dgroup, .compare, .pull, .steps > li');
+  const targets = document.querySelectorAll('.intro, .sec-head, .film-frame, .causes, .flow, .loop-note, .report-grid, .dgroup, .compare, .pull, .steps > li');
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver(entries => entries.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }

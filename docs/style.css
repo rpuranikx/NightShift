@@ -262,3 +262,7 @@ h1, h2, h3 { color: var(--ink); font-weight: 600; letter-spacing: -0.02em; text-
 
 /* grid and flex children shrink so code blocks scroll instead of widening the page */
 .contract > .file, .steps > li, .report-grid > *, .decisions dd, .crow > span { min-width: 0; }
+
+/* the film */
+.film-frame { border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: #03090C; box-shadow: 0 40px 100px -40px rgba(0,0,0,.7); }
+.film-frame video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #03090C; }
