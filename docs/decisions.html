@@ -72,6 +72,8 @@
           <dd>The error message usually gives it away, but 10% of failures have none. So the model also sees how many other tests failed in the run, whether the bench rebooted, how many benches failed this test on this build, and how often the test fails in general.</dd></div>
         <div><dt>Logistic regression</dt>
           <dd>About 2,000 labeled failures. A simple model trains in seconds, is hard to overfit, and its weights show what drove each call. It trains on older nights and tests on the latest 8, the way it’s used.</dd></div>
+        <div><dt>Unsure calls go to a person</dt>
+          <dd>A call under 0.7 confidence stays out of the report and goes to a short review queue. Those answers become tomorrow’s training labels.</dd></div>
         <div><dt>The LLM doesn’t classify</dt>
           <dd>A real lab has thousands of failures a night. The model scores them all in seconds for free, the same way every time, with an accuracy I can measure.</dd></div>
       </dl>
@@ -82,7 +84,7 @@
           <tr><td>Accuracy</td><td class="num">96.6%</td></tr>
           <tr><td>Macro F1, so scripts alone can’t carry the score</td><td class="num">0.95</td></tr>
           <tr><td>Accuracy with no error message</td><td class="num">72%</td></tr>
-          <tr class="hot"><td>Real defect recall. About 1 in 10 real defects gets called something else, which is why the review queue exists.</td><td class="num">0.89</td></tr>
+          <tr class="hot"><td>Real defect recall. About 1 in 10 real defects gets called something else.</td><td class="num">0.89</td></tr>
         </tbody>
       </table>
     </div>

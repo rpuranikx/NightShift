@@ -80,7 +80,7 @@
   <div class="container">
     <div class="head">
       <h2>Logs in, plan out</h2>
-      <p class="lead">One Databricks job runs every step overnight. If a step fails, it stops there.</p>
+      <p class="lead">One Databricks job runs it all overnight, from raw logs to the report.</p>
     </div>
     <figure class="map">
       <svg viewBox="0 0 1200 330" role="img" aria-labelledby="map-title">
@@ -109,18 +109,7 @@
         <text class="note" x="1110" y="300">low-confidence calls</text>
         <text class="note" x="700" y="300">corrections train the model</text>
       </svg>
-      <figcaption class="visually-hidden">The steps, in order, are listed below.</figcaption>
     </figure>
-    <ol class="legend">
-      <li><strong>Bench logs</strong> land in a volume, the way the bench PCs write them.</li>
-      <li><strong>Bronze</strong> reads only new files and keeps every value as a string.</li>
-      <li><strong>Silver</strong> drops retries and parses both timestamp formats.</li>
-      <li><strong>Gold</strong> finds bench health, flaky tests and bad builds.</li>
-      <li><strong>Checks</strong> stop the job before bad tables reach the model.</li>
-      <li><strong>The model</strong> calls each failure one of four causes, with a confidence.</li>
-      <li><strong>The agent</strong> writes the report. SQL already picked each section.</li>
-      <li><strong>Engineers</strong> review the unsure calls, and the model learns from them.</li>
-    </ol>
   </div>
 </section>
 
@@ -172,40 +161,30 @@
   <div class="container rows-wrap">
     <div class="head side">
       <h2>Calls I made</h2>
-      <p><a class="more" href="decisions.html">All the decisions</a></p>
+      <p class="lead">What I tried first, what broke, and what I changed.</p>
+      <p><a class="more" href="decisions.html">Read the decisions</a></p>
     </div>
     <ol class="rows">
-      <li><h3>SQL decides, the LLM writes</h3><p>Prompt rules kept getting ignored. Once SQL picked each section, the report came out right.</p></li>
-      <li><h3>A model I can explain</h3><p>Logistic regression on about 2,000 labels. It scores thousands of failures in seconds, the same way every time.</p></li>
-      <li><h3>Unsure calls go to a person</h3><p>Under 0.7 confidence skips the report and lands in a short review queue.</p></li>
-      <li><h3>Raw logs stay raw</h3><p>Bronze keeps strings exactly as logged, so a bad cleaning rule never loses data.</p></li>
+      <li><a href="decisions.html#agent"><h3>SQL decides, the LLM writes</h3></a></li>
+      <li><a href="decisions.html#model"><h3>A model I can explain</h3></a></li>
+      <li><a href="decisions.html#model"><h3>Unsure calls go to a person</h3></a></li>
+      <li><a href="decisions.html#data"><h3>Raw logs stay raw</h3></a></li>
+      <li><a href="decisions.html#databricks"><h3>Databricks, not a notebook</h3></a></li>
     </ol>
   </div>
 </section>
 
-<!-- Statement: the case for the platform, in one line -->
-<section class="section statement" id="why">
-  <div class="container">
-    <p class="say">A notebook answers what went wrong last month. Databricks answers what went wrong last night, every morning, without me.</p>
-    <p><a class="more" href="decisions.html#databricks">Why not just a Jupyter notebook</a></p>
-  </div>
-</section>
 
 <!-- Close: the deploy, beside the commands -->
 <section class="section band" id="use">
-  <div class="container close">
+  <div class="container close solo">
     <div>
       <h2>Run it on your lab’s data</h2>
-      <p class="lead">It runs on Databricks Free Edition. Deploy the demo lab first, then swap in your logs.</p>
+      <p class="lead">Five steps, from the demo lab to your own bench logs.</p>
       <div class="actions">
         <a class="btn primary" href="deploy.html">Read the setup guide</a>
       </div>
     </div>
-<pre class="term" aria-label="Deploy commands"><code>git clone https://github.com/rpuranikx/NightShift
-cd NightShift
-databricks auth login --host https://&lt;your-workspace&gt;
-databricks bundle deploy
-databricks bundle run nightshift_nightly</code></pre>
   </div>
 </section>
 
