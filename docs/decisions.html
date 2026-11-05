@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NightShift decisions: what I chose and why</title>
+<meta name="description" content="The calls behind NightShift: where each piece of logic lives, what I tried first, the model's results and why it runs on Databricks.">
+<meta name="theme-color" content="#0B2026">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B2026'/%3E%3Crect x='7' y='17' width='6' height='6' fill='%23FF3621'/%3E%3Crect x='15' y='17' width='6' height='6' fill='%233CF5C8'/%3E%3Crect x='15' y='9' width='6' height='6' fill='%233CF5C8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="doc-page">
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="mark" href="index.html" aria-label="NightShift home">Night<span>Shift</span></a>
+    <nav aria-label="Site">
+      <a href="index.html#how">How it works</a>
+      <a href="decisions.html" aria-current="page">Decisions</a>
+      <a href="deploy.html">Deploy</a>
+      <a href="https://github.com/rpuranikx/NightShift">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="doc-hero">
+  <div class="container doc-grid">
+    <div>
+      <h1>What I chose, and why</h1>
+      <p class="lead">Where each rule lives, and what I changed when it broke.</p>
+    </div>
+    <nav class="toc" aria-label="On this page">
+      <a href="#data">Data</a>
+      <a href="#model">Model</a>
+      <a href="#agent">Agent</a>
+      <a href="#databricks">Why Databricks</a>
+    </nav>
+  </div>
+</section>
+
+<section class="doc-section" id="data">
+  <div class="container doc-grid">
+    <h2>Data</h2>
+    <dl class="calls">
+      <div><dt>Bronze keeps everything as strings</dt>
+        <dd>Benches log timestamps in two formats. If Spark guessed the types, it would pick one and quietly null the other. Bronze stores the text as written, so silver can always be rebuilt.</dd></div>
+      <div><dt>Auto Loader for the logs</dt>
+        <dd>New files land every night. Auto Loader remembers what it already read, so a rerun never duplicates data.</dd></div>
+      <div><dt>Keep failures with no message</dt>
+        <dd>A row with no status or timestamp can’t count toward a pass rate, so it’s dropped. A failure with no message is still a failure, so it’s only flagged.</dd></div>
+      <div><dt>Flaky means it fails on every build</dt>
+        <dd>My first rule flagged any test failing 8 to 50% of the time, and caught about 40 tests with a couple of random failures. Requiring that on 4 or more builds cut it to the one that’s really flaky.</dd></div>
+      <div><dt>Regressions split by display count</dt>
+        <dd>A build that only breaks dual-display benches looks half broken everywhere when you average it. Split, it’s fully broken where it matters.</dd></div>
+      <div><dt>Checks before the model</dt>
+        <dd>If a SQL change breaks the gold tables, the job stops before the model and the agent see them. A late report beats a wrong one.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="doc-section" id="model">
+  <div class="container doc-grid">
+    <h2>Model</h2>
+    <div>
+      <dl class="calls">
+        <div><dt>Look at what an engineer looks at</dt>
+          <dd>The error message usually gives it away, but 10% of failures have none. So the model also sees how many other tests failed in the run, whether the bench rebooted, how many benches failed this test on this build, and how often the test fails in general.</dd></div>
+        <div><dt>Logistic regression</dt>
+          <dd>About 2,000 labeled failures. A simple model trains in seconds, is hard to overfit, and its weights show what drove each call. It trains on older nights and tests on the latest 8, the way it’s used.</dd></div>
+        <div><dt>The LLM doesn’t classify</dt>
+          <dd>A real lab has thousands of failures a night. The model scores them all in seconds for free, the same way every time, with an accuracy I can measure.</dd></div>
+      </dl>
+      <table class="metrics">
+        <caption>Results on the 8 most recent nights.</caption>
+        <thead><tr><th scope="col">Metric</th><th scope="col" class="num">Result</th></tr></thead>
+        <tbody>
+          <tr><td>Accuracy</td><td class="num">96.6%</td></tr>
+          <tr><td>Macro F1, so scripts alone can’t carry the score</td><td class="num">0.95</td></tr>
+          <tr><td>Accuracy with no error message</td><td class="num">72%</td></tr>
+          <tr class="hot"><td>Real defect recall. About 1 in 10 real defects gets called something else, which is why the review queue exists.</td><td class="num">0.89</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section" id="agent">
+  <div class="container doc-grid">
+    <h2>Agent</h2>
+    <div>
+      <p class="lead">Getting the report right took four rounds. Every round taught the same thing.</p>
+      <ol class="rounds">
+        <li><strong>Raw failures in.</strong> It listed every failure and filed a 53%-confidence guess as a defect. A bigger model wrote nearly the same report, so the model wasn’t the problem.</li>
+        <li><strong>Analysis moved into SQL.</strong> Trends, known flaky tests and how many benches share a failure became columns. The report started leading with the DUO&#8209;03 cable.</li>
+        <li><strong>It still ignored prompt rules.</strong> One-off defects kept landing in “File a defect”, and it read the rules back in the report.</li>
+        <li><strong>SQL picks every section.</strong> The prompt just says write it up and don’t move anything. That fixed it.</li>
+      </ol>
+      <div class="ba">
+        <figure><figcaption>Before</figcaption><p><b>File a defect</b><br>DUO-03: 2 real_defect failures on “sanity_nav_03” and “sanity_serial_06”…</p></figure>
+        <figure class="after"><figcaption>After</figcaption><p><b>Watch</b><br>DUO-03: 2 real defect failures, including “sanity_nav_03” and “sanity_serial_06”…</p></figure>
+      </div>
+      <p class="say">If a rule can be written in SQL, it goes in SQL. The LLM writes. It doesn’t decide.</p>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section" id="databricks">
+  <div class="container doc-grid">
+    <h2>Why Databricks</h2>
+    <div>
+      <p class="lead">Couldn’t this be a Jupyter notebook? For finding the problems once, yes. 64,000 log lines fit in pandas. The job is a report every morning that people can trust.</p>
+      <table class="vs">
+        <thead><tr><th scope="col">The job needs</th><th scope="col">A notebook</th><th scope="col">NightShift on Databricks</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Run nightly without me</th><td>Runs when I open it</td><td>One job, reruns from the failed step</td></tr>
+          <tr><th scope="row">Only read new logs</th><td>Rereads everything</td><td>Auto Loader, no duplicates</td></tr>
+          <tr><th scope="row">Keep bad data out</th><td>If I remember</td><td>Expectations and checks every run</td></tr>
+          <tr><th scope="row">Show why it said that</th><td>A printout</td><td>MLflow runs, traced agent calls</td></tr>
+          <tr><th scope="row">Set it up again</th><td>Works on my laptop</td><td><code>databricks bundle deploy</code></td></tr>
+        </tbody>
+      </table>
+      <h3>What it costs</h3>
+      <ul class="costs">
+        <li>For 15 benches it’s more platform than the data needs. Postgres and Grafana would cover a dashboard.</li>
+        <li>Serverless startup makes the job about 10 minutes for data that fits on a laptop.</li>
+        <li>The LLM call costs money and adds some randomness, which is why the deciding happens in SQL.</li>
+        <li>It pays off when it runs every day and grows to more labs, with one place for the data, the model and the permissions.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="container">
+    <div class="foot-row">
+      <span>Rishi Puranik. The data is synthetic, modeled on benches I work with.</span>
+      <nav aria-label="Footer">
+        <a href="index.html">Overview</a>
+        <a href="deploy.html">Deploy</a>
+        <a href="https://github.com/rpuranikx/NightShift">Code</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

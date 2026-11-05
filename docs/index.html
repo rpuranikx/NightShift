@@ -3,341 +3,227 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NightShift: morning triage for hardware test labs</title>
-<meta name="description" content="NightShift sorts last night's test bench failures into script, framework, hardware and real defect, and writes the morning report before anyone gets in. Built on Databricks by Rishi Puranik.">
+<title>NightShift: overnight test failures, sorted before standup</title>
+<meta name="description" content="NightShift sorts overnight hardware test failures into script, framework, hardware and real defect, and writes the morning report before anyone gets in. Built on Databricks by Rishi Puranik.">
 <meta property="og:title" content="NightShift">
-<meta property="og:description" content="Last night's test failures, sorted before anyone gets in. Built on Databricks.">
+<meta property="og:description" content="Overnight test failures, sorted before standup. Built on Databricks.">
+<meta property="og:image" content="media/nightshift-story.jpg">
 <meta name="theme-color" content="#0B2026">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B2026'/%3E%3Crect x='7' y='17' width='6' height='6' fill='%23FF3621'/%3E%3Crect x='15' y='17' width='6' height='6' fill='%233CF5C8'/%3E%3Crect x='15' y='9' width='6' height='6' fill='%233CF5C8'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="nav">
-  <a class="mark" href="#top">Night<span>Shift</span></a>
-  <nav>
-    <a href="#how">How it works</a>
-    <a href="#decisions">Decisions</a>
-    <a href="#use">Use it</a>
-    <a class="gh" href="https://github.com/rpuranikx/NightShift">GitHub</a>
-  </nav>
+  <div class="container nav-inner">
+    <a class="mark" href="#top" aria-label="NightShift home">Night<span>Shift</span></a>
+    <nav aria-label="Site">
+      <a href="#how">How it works</a>
+      <a href="decisions.html">Decisions</a>
+      <a href="deploy.html">Deploy</a>
+      <a href="https://github.com/rpuranikx/NightShift">GitHub</a>
+    </nav>
+  </div>
 </header>
-
-<!-- ================= HERO: the story in 50 seconds ================= -->
-<section class="hero" id="top">
-  <video id="film" autoplay muted loop playsinline preload="auto" poster="media/nightshift-story.jpg"
-    aria-label="Film: fifteen test benches fail overnight and an engineer reviews them by hand, getting through 14 of 61 before the 9:30 standup. Then the same night with NightShift: a robot sorts every failure at 2 AM, the report is waiting at 6:00, and standup starts with actions assigned.">
-    <source src="media/nightshift-story-4x5.mp4" type="video/mp4" media="(max-aspect-ratio: 1/1)">
-    <source src="media/nightshift-story.mp4" type="video/mp4">
-  </video>
-  <button class="replay" id="playpause" aria-label="Pause the film">Pause</button>
-</section>
 
 <main>
 
-<!-- ================= INTRO ================= -->
-<section class="intro wrap">
-  <p class="eyebrow">Morning triage for hardware test labs, built on Databricks</p>
-  <h1>Last night's test failures, sorted before anyone gets&nbsp;in.</h1>
-  <div class="intro-body">
-    <p>In my lab, benches run test suites overnight. Every morning we spend the first hours going through the failures one by one, reading logs and screenshots, deciding whether each one is a real defect or noise before we can write anything up.</p>
-    <p>NightShift does that sorting overnight. It loads the raw bench logs into a lakehouse, cleans them, sorts every failure with an ML model, and has an LLM agent write the morning report. The engineers start the day on the failures that matter.</p>
-  </div>
-  <div class="ctas">
-    <a class="btn primary" href="#use">Run it on your lab's data</a>
-    <a class="btn" href="https://github.com/rpuranikx/NightShift">Read the code</a>
-  </div>
-  <p class="note">The data is synthetic, modeled on the benches I work with. No company data is used.</p>
-</section>
-
-<!-- ================= PROBLEM ================= -->
-<section class="wrap section" id="problem">
-  <div class="sec-head">
-    <h2>Every failure is one of four things</h2>
-    <p>And each one goes to a different team. Sorting them is slow, repetitive, and the same reasoning every morning, which makes it a good thing to automate.</p>
-  </div>
-  <div class="causes" role="table" aria-label="Failure causes from one night">
-    <div class="causes-row head" role="row">
-      <span role="columnheader">Cause</span><span role="columnheader">Example</span><span role="columnheader">Who handles it</span><span role="columnheader">One night, 61 failures</span>
+<!-- Hero: Stage. The head on four columns, the film on eight. -->
+<section class="hero" id="top">
+  <div class="container hero-grid">
+    <div class="hero-text">
+      <h1>Test failures, sorted before standup.</h1>
+      <p class="lead">NightShift reads last night’s bench logs and writes the morning report.</p>
+      <div class="actions">
+        <a class="btn primary" href="deploy.html">Deploy it</a>
+        <a class="btn" href="https://github.com/rpuranikx/NightShift">Read the code</a>
+      </div>
     </div>
-    <div class="causes-row" role="row">
-      <span class="cause" role="cell">Script</span>
-      <span role="cell">The test looks for a button that moved</span>
-      <span role="cell">Test team fixes the script</span>
-      <span class="bar" role="cell"><i style="--w:42.6%"></i><b>26</b></span>
-    </div>
-    <div class="causes-row" role="row">
-      <span class="cause" role="cell">Hardware</span>
-      <span role="cell">ADB cable going bad on one bench</span>
-      <span role="cell">Lab swaps the cable</span>
-      <span class="bar" role="cell"><i style="--w:31.1%"></i><b>19</b></span>
-    </div>
-    <div class="causes-row" role="row">
-      <span class="cause" role="cell">Framework</span>
-      <span role="cell">Harness loses its session mid&#8209;run</span>
-      <span role="cell">Framework team</span>
-      <span class="bar" role="cell"><i style="--w:18%"></i><b>11</b></span>
-    </div>
-    <div class="causes-row hot" role="row">
-      <span class="cause" role="cell">Real defect</span>
-      <span role="cell">Display doesn't change brightness</span>
-      <span role="cell">Dev team, file a defect</span>
-      <span class="bar" role="cell"><i style="--w:8.2%"></i><b>5</b></span>
-    </div>
-  </div>
-  <p class="aside">Real defects are the smallest group and the one that matters most. Finding those five is the whole point of the morning.</p>
-</section>
-
-<!-- ================= HOW IT WORKS ================= -->
-<section class="wrap section" id="how">
-  <div class="sec-head">
-    <h2>How it works</h2>
-    <p>One Databricks job runs the whole chain every night. If a step fails, the job stops there and can be rerun from that step.</p>
-  </div>
-
-  <ol class="flow">
-    <li><span class="tag">Raw logs</span><strong>Bench logs land in a volume</strong><p>JSONL run logs, a bench list and a build list, the way the bench PCs write them.</p></li>
-    <li><span class="tag">Bronze</span><strong>Auto Loader</strong><p>Reads only the files it hasn't seen. Everything stays a string, exactly as logged.</p></li>
-    <li><span class="tag">Silver</span><strong>Clean and type</strong><p>Dedupes uploader retries, parses two timestamp formats, drops rows that can't be counted.</p></li>
-    <li><span class="tag">Gold</span><strong>Find the patterns</strong><p>Bench health over time, flaky tests, and build regressions split by display count.</p></li>
-    <li><span class="tag">Check</span><strong>Data checks</strong><p>Stop the job before bad tables reach the model and the report.</p></li>
-    <li><span class="tag">Model</span><strong>Sort every failure</strong><p>A classifier in MLflow calls each failure script, framework, hardware or real defect, with a confidence.</p></li>
-    <li class="mint"><span class="tag">Agent</span><strong>Write the morning report</strong><p>SQL decides which section each failure goes in. The LLM writes it up, and every call is traced.</p></li>
-  </ol>
-  <p class="loop-note"><span>Feedback loop</span> Engineers review the low&#8209;confidence calls in a short queue. Their corrections go into <code>triage_feedback</code> and the model trains on them first the next night.</p>
-</section>
-
-<!-- ================= REPORT ================= -->
-<section class="wrap section" id="report">
-  <div class="sec-head">
-    <h2>What's waiting in the morning</h2>
-    <p>This is a real report from a run, trimmed. It leads with the DUO&#8209;03 cable, because that's what an engineer would want to hear first.</p>
-  </div>
-  <div class="report-grid">
-    <figure class="recording" id="recording" hidden>
-      <video src="media/agent-demo.mp4" controls muted playsinline preload="metadata"></video>
-      <figcaption>Asking the agent follow-up questions about the report.</figcaption>
+    <figure class="film">
+      <video id="film" autoplay muted loop playsinline preload="auto" poster="media/nightshift-story.jpg"
+        aria-label="Film: fifteen test benches fail overnight and an engineer reviews them by hand, getting through 14 of 61 before the 9:30 standup. Then the same night with NightShift: every failure sorted at 2 AM, the report waiting at 6:00, and standup starts with actions assigned.">
+        <source src="media/nightshift-story-4x5.mp4" type="video/mp4" media="(max-width: 40rem)">
+        <source src="media/nightshift-story.mp4" type="video/mp4">
+      </video>
+      <button class="film-toggle" id="playpause" type="button" aria-label="Pause the film">Pause</button>
     </figure>
-    <article class="report" aria-label="Sample morning report">
-      <header><span class="mark small">Night<span>Shift</span></span><span>Morning report · 15 benches</span></header>
-      <h3>Summary</h3>
-      <p>DUO&#8209;03 had a pass rate of 85.5% last night, down from its 7&#8209;night average of 92.6%, with 16 hardware ADB failures. Example error: <code>error: device offline (hil-pc-11-d2)</code>.</p>
-      <h3 class="o">Hardware attention</h3>
-      <ul>
-        <li><b>DUO-03</b>: 16 ADB failures, pass rate 85.5% (prev 7 nights 92.6%), 4 reboots</li>
-        <li><b>DUO-05</b>: 2 ADB failures, <code>adb: protocol fault: connection reset</code></li>
-      </ul>
-      <h3>Fix the scripts</h3>
-      <ul>
-        <li><b>DUO-07</b>: 4 script failures incl. <code>screen_timeout</code>, <code>ElementNotFound: id/screen_timeout</code></li>
-        <li><b>DUO-02</b>: 3 script failures incl. <code>volume_control</code>, <code>StaleElementReference</code></li>
-      </ul>
-      <h3>Framework issues</h3>
-      <ul>
-        <li><b>DUO-01</b>: 3 framework failures, <code>KeyError: 'display_2' in config loader</code></li>
-      </ul>
-      <h3>Watch</h3>
-      <ul>
-        <li><b>SOLO-06</b>: 1 real defect failure, test <code>sanity_can_06</code>, <code>Serial echo mismatch: sent 'PING' got ''</code></li>
-      </ul>
-      <h3 class="m">Needs a human look</h3>
-      <ul>
-        <li><b>SOLO-03</b>: 1 real defect failure, test <code>can_heartbeat</code>, no error message</li>
-      </ul>
-    </article>
   </div>
 </section>
 
-<!-- ================= DECISIONS ================= -->
-<section class="wrap section" id="decisions">
-  <div class="sec-head">
-    <h2>Decisions, and why</h2>
-    <p>The interesting part of this project isn't any single tool. It's the calls about where each piece of logic should live, and what I changed when the first version was wrong.</p>
-  </div>
-
-  <div class="dgroup">
-    <h3 class="dlabel">Data</h3>
-    <dl class="decisions">
-      <div><dt>Bronze keeps everything as strings</dt>
-        <dd>Benches log timestamps in two formats. If Spark inferred types, it would pick one and quietly null out the other. Bronze stores the text exactly as written and silver decides how to parse it, so silver can always be rebuilt if a cleaning rule turns out wrong.</dd></div>
-      <div><dt>Auto Loader for the logs</dt>
-        <dd>Every night adds new files. Auto Loader remembers what it already loaded, so each run only reads the new ones, and rerunning the job never duplicates data.</dd></div>
-      <div><dt>Drop what can't be counted, keep failures with no message</dt>
-        <dd>A result with no status or timestamp can't go toward a pass rate, so it's dropped. A failure with no error message is still a real failure, so it only gets flagged, and the model has to cope with it.</dd></div>
-      <div><dt>Flaky means "fails sometimes, on every build"</dt>
-        <dd>My first rule flagged any test with an 8 to 50% fail rate, and it caught about 40 tests that just had a couple of random failures. Requiring that pattern on at least 4 builds cut it to the one test that's actually flaky, and keeps a single bad build from looking flaky.<span class="was">First try: 40 flaky tests. After: 1.</span></dd></div>
-      <div><dt>Regressions split by display count</dt>
-        <dd>Averaged together, a build that only breaks dual-display benches looks half broken everywhere instead of fully broken where it matters.</dd></div>
-      <div><dt>Data checks before the model</dt>
-        <dd>If a SQL change breaks the gold tables, the job stops before the model and the agent run on bad data. A wrong report is worse than a late one.</dd></div>
-    </dl>
-  </div>
-
-  <div class="dgroup">
-    <h3 class="dlabel">Model</h3>
-    <dl class="decisions">
-      <div><dt>Look at what an engineer would look at</dt>
-        <dd>Most of the time the error message gives it away, but 10% of failures have no message, and the same message can mean different things in different places. So the model also sees how many other tests failed in the run, whether the watchdog rebooted the bench, what share of benches failed this test on this build, and how often the test fails in general.</dd></div>
-      <div><dt>Logistic regression, not something fancier</dt>
-        <dd>With about 2,000 labeled failures, a simple model trains in seconds, is hard to overfit, and its weights show what's driving each call. It's trained on older nights and tested on the most recent 8, the same way it's used.</dd></div>
-      <div><dt>Low confidence goes to a person</dt>
-        <dd>Anything under 0.7 confidence skips the report and lands in a short review queue. Reviewing everything would just be the manual triage again.</dd></div>
-      <div><dt>Not having the LLM classify every failure</dt>
-        <dd>A real lab has thousands of failures a night. The model scores all of them in seconds for free, gives the same answer every time, and has an accuracy I can measure. The LLM is better spent on reading the results and writing the report.</dd></div>
-    </dl>
-
-    <div class="metrics" role="table" aria-label="Triage model results on the 8 most recent nights">
-      <div role="row"><span role="cell">96.6%</span><span role="cell">Accuracy</span></div>
-      <div role="row"><span role="cell">0.95</span><span role="cell">Macro F1, so scripts alone can't carry the score</span></div>
-      <div role="row"><span role="cell">72%</span><span role="cell">Accuracy when the error message is missing</span></div>
-      <div role="row" class="hot"><span role="cell">0.89</span><span role="cell">Real defect recall. The number I'd watch: about 1 in 10 real defects gets called something else, which is why the review queue exists.</span></div>
+<!-- Before and after: a table, the film's two mornings side by side -->
+<section class="section" id="problem">
+  <div class="container">
+    <div class="head">
+      <h2>Same night, two mornings</h2>
+      <p class="lead">Every failure is a script, a framework error, bad hardware or a real defect. Someone has to say which.</p>
     </div>
+    <table class="compare">
+      <caption>From the demo lab: 15 benches, 61 failures in one night.</caption>
+      <thead>
+        <tr><th scope="col"><span class="visually-hidden">What</span></th><th scope="col">By hand</th><th scope="col">With NightShift</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">By standup</th><td class="num">14 of 61 reviewed</td><td class="num yes">61 of 61, sorted at 2 AM</td></tr>
+        <tr><th scope="row">What you read</th><td>Every log and screenshot</td><td class="yes">One report, by section</td></tr>
+        <tr><th scope="row">Real defects</th><td>Whenever you get to them</td><td class="yes">Their own section, with the build</td></tr>
+        <tr><th scope="row">Unsure calls</th><td>Every call is yours</td><td class="yes">Only the low-confidence ones</td></tr>
+      </tbody>
+    </table>
   </div>
+</section>
 
-  <div class="dgroup">
-    <h3 class="dlabel">Agent</h3>
-    <p class="dintro">Getting the report right took four rounds, and every round taught me the same lesson.</p>
-    <ol class="rounds">
-      <li><strong>Raw failures in, everything out.</strong> The first version listed every failure and filed a 53%-confidence guess as a defect. Switching to a bigger model gave nearly the same report, so the model wasn't the problem.</li>
-      <li><strong>Moved the analysis into SQL.</strong> Trends against the last 7 nights, known flaky tests, and how many benches share a failure became columns in one summary tool. The report started leading with the DUO&#8209;03 cable.</li>
-      <li><strong>It still ignored rules in the prompt.</strong> One-off defects kept landing in "File a defect", and it started reading the rules back in the report.</li>
-      <li class="mint"><strong>SQL now decides which section every failure goes in.</strong> The prompt just says to write it up without moving anything. That fixed it.</li>
+<!-- The map: the signature, the pipeline drawn from the real job -->
+<section class="section band" id="how">
+  <div class="container">
+    <div class="head">
+      <h2>Logs in, plan out</h2>
+      <p class="lead">One Databricks job runs every step overnight. If a step fails, it stops there.</p>
+    </div>
+    <figure class="map">
+      <svg viewBox="0 0 1200 330" role="img" aria-labelledby="map-title">
+        <title id="map-title">Bench logs flow through bronze, silver and gold tables, a data check, the triage model and the morning agent into the report. Engineers review low-confidence calls, and those labels train the model.</title>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrowhead"/></marker>
+          <marker id="arrow-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrowhead-m"/></marker>
+        </defs>
+        <g class="edges">
+          <path d="M128 110 H158" marker-end="url(#arrow)"/><path d="M278 110 H308" marker-end="url(#arrow)"/>
+          <path d="M428 110 H458" marker-end="url(#arrow)"/><path d="M578 110 H608" marker-end="url(#arrow)"/>
+          <path d="M728 110 H758" marker-end="url(#arrow)"/><path d="M878 110 H908" marker-end="url(#arrow)"/>
+          <path d="M1028 110 H1058" marker-end="url(#arrow)"/>
+          <path class="loop" d="M1120 150 V262 H996" marker-end="url(#arrow-m)"/>
+          <path class="loop" d="M848 262 H818 V154" marker-end="url(#arrow-m)"/>
+        </g>
+        <g class="node"><rect x="8" y="70" width="120" height="80" rx="8"/><text x="68" y="104">Bench logs</text><text class="sub" x="68" y="126">JSONL, CSV</text></g>
+        <g class="node"><rect x="158" y="70" width="120" height="80" rx="8"/><text x="218" y="104">Bronze</text><text class="sub" x="218" y="126">Auto Loader</text></g>
+        <g class="node"><rect x="308" y="70" width="120" height="80" rx="8"/><text x="368" y="104">Silver</text><text class="sub" x="368" y="126">cleaned, typed</text></g>
+        <g class="node"><rect x="458" y="70" width="120" height="80" rx="8"/><text x="518" y="104">Gold</text><text class="sub" x="518" y="126">patterns</text></g>
+        <g class="node check"><rect x="608" y="70" width="120" height="80" rx="8"/><text x="668" y="104">Checks</text><text class="sub" x="668" y="126">stop bad data</text></g>
+        <g class="node"><rect x="758" y="70" width="120" height="80" rx="8"/><text x="818" y="104">Triage model</text><text class="sub" x="818" y="126">MLflow</text></g>
+        <g class="node"><rect x="908" y="70" width="120" height="80" rx="8"/><text x="968" y="104">Agent</text><text class="sub" x="968" y="126">SQL, then LLM</text></g>
+        <g class="node out"><rect x="1058" y="70" width="134" height="80" rx="8"/><text x="1125" y="104">Report</text><text class="sub" x="1125" y="126">by 6:00</text></g>
+        <g class="node review"><rect x="848" y="232" width="148" height="60" rx="8"/><text x="922" y="267">Engineer review</text></g>
+        <text class="note" x="1110" y="300">low-confidence calls</text>
+        <text class="note" x="700" y="300">corrections train the model</text>
+      </svg>
+      <figcaption class="visually-hidden">The steps, in order, are listed below.</figcaption>
+    </figure>
+    <ol class="legend">
+      <li><strong>Bench logs</strong> land in a volume, the way the bench PCs write them.</li>
+      <li><strong>Bronze</strong> reads only new files and keeps every value as a string.</li>
+      <li><strong>Silver</strong> drops retries and parses both timestamp formats.</li>
+      <li><strong>Gold</strong> finds bench health, flaky tests and bad builds.</li>
+      <li><strong>Checks</strong> stop the job before bad tables reach the model.</li>
+      <li><strong>The model</strong> calls each failure one of four causes, with a confidence.</li>
+      <li><strong>The agent</strong> writes the report. SQL already picked each section.</li>
+      <li><strong>Engineers</strong> review the unsure calls, and the model learns from them.</li>
     </ol>
-    <div class="ba">
-      <figure><figcaption>Before</figcaption><p><b>File a defect</b><br>DUO-03: 2 real_defect failures on tests "sanity_nav_03" and "sanity_serial_06"…<br>SOLO-06: 1 real_defect failure on test "sanity_can_06"…</p></figure>
-      <figure class="after"><figcaption>After</figcaption><p><b>Watch</b><br>DUO-03: 2 real defect failures, including "sanity_nav_03" and "sanity_serial_06"…<br>SOLO-06: 1 real defect failure, test "sanity_can_06"…</p></figure>
+  </div>
+</section>
+
+<!-- The report: the real output, shown as the document it is -->
+<section class="section" id="report">
+  <div class="container">
+    <div class="head">
+      <h2>What’s waiting at 6:00</h2>
+      <p class="lead">A real report from a run, trimmed. The failing cable comes first.</p>
     </div>
-    <p class="takeaway">If a rule can be written in SQL, put it in SQL. Let the LLM do the writing, not the deciding.</p>
+    <div class="report-grid">
+      <figure class="recording" id="recording" hidden>
+        <video src="media/agent-demo.mp4" controls muted playsinline preload="metadata"></video>
+        <figcaption>Asking the agent follow-up questions about the report.</figcaption>
+      </figure>
+      <article class="report" aria-label="Sample morning report">
+        <header><span class="mark small">Night<span>Shift</span></span><span>Morning report, 15 benches</span></header>
+        <div class="report-cols">
+          <div>
+            <h3>Summary</h3>
+            <p>DUO&#8209;03 passed 85.5% last night, down from 92.6% over the last 7 nights, with 16 hardware ADB failures. Example: <code>error: device offline (hil-pc-11-d2)</code>.</p>
+            <h3 class="o">Hardware attention</h3>
+            <ul>
+              <li><b>DUO-03</b>: 16 ADB failures, pass rate 85.5% (prev 7 nights 92.6%), 4 reboots</li>
+              <li><b>DUO-05</b>: 2 ADB failures, <code>adb: protocol fault: connection reset</code></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Fix the scripts</h3>
+            <ul>
+              <li><b>DUO-07</b>: 4 script failures, <code>ElementNotFound: id/screen_timeout</code></li>
+              <li><b>DUO-02</b>: 3 script failures, <code>StaleElementReference</code></li>
+            </ul>
+            <h3>Framework issues</h3>
+            <ul><li><b>DUO-01</b>: 3 failures, <code>KeyError: 'display_2' in config loader</code></li></ul>
+            <h3>Watch</h3>
+            <ul><li><b>SOLO-06</b>: 1 real defect failure on <code>sanity_can_06</code></li></ul>
+            <h3 class="m">Needs a human look</h3>
+            <ul><li><b>SOLO-03</b>: 1 real defect failure on <code>can_heartbeat</code>, no error message</li></ul>
+          </div>
+        </div>
+      </article>
+    </div>
   </div>
 </section>
 
-<!-- ================= WHY DATABRICKS ================= -->
-<section class="wrap section" id="why">
-  <div class="sec-head">
-    <h2>Couldn't this just be a Jupyter notebook?</h2>
-    <p>For the analysis, yes. 64,000 log lines fit in pandas on a laptop, and I could have found all three planted problems in an afternoon. But finding them once isn't the job. The job is a report waiting every morning, from logs that keep arriving, that people can trust and act on.</p>
+<!-- Decisions: rows, each one a call I made and why -->
+<section class="section" id="decisions">
+  <div class="container rows-wrap">
+    <div class="head side">
+      <h2>Calls I made</h2>
+      <p><a class="more" href="decisions.html">All the decisions</a></p>
+    </div>
+    <ol class="rows">
+      <li><h3>SQL decides, the LLM writes</h3><p>Prompt rules kept getting ignored. Once SQL picked each section, the report came out right.</p></li>
+      <li><h3>A model I can explain</h3><p>Logistic regression on about 2,000 labels. It scores thousands of failures in seconds, the same way every time.</p></li>
+      <li><h3>Unsure calls go to a person</h3><p>Under 0.7 confidence skips the report and lands in a short review queue.</p></li>
+      <li><h3>Raw logs stay raw</h3><p>Bronze keeps strings exactly as logged, so a bad cleaning rule never loses data.</p></li>
+    </ol>
   </div>
-  <div class="compare" role="table" aria-label="Notebook compared with Databricks">
-    <div class="crow head" role="row"><span role="columnheader">The job needs</span><span role="columnheader">A notebook on my laptop</span><span role="columnheader">NightShift on Databricks</span></div>
-    <div class="crow" role="row"><span role="cell">Run every night without me</span><span role="cell">Runs when I open it</span><span role="cell">One job, in order, stops and reruns from the failed step</span></div>
-    <div class="crow" role="row"><span role="cell">Handle new logs every night</span><span role="cell">Rereads everything, or I write my own bookkeeping</span><span role="cell">Auto Loader reads only new files, reruns never duplicate</span></div>
-    <div class="crow" role="row"><span role="cell">Keep bad data out of the report</span><span role="cell">Checks run if I remember to</span><span role="cell">Pipeline expectations and gold checks on every run</span></div>
-    <div class="crow" role="row"><span role="cell">Share results, not my notebook</span><span role="cell">Send a screenshot</span><span role="cell">Tables in Unity Catalog with permissions and lineage back to the raw file</span></div>
-    <div class="crow" role="row"><span role="cell">Explain why the report said that</span><span role="cell">A model in memory and a printout</span><span role="cell">Every training run in MLflow, every agent call traced to its queries</span></div>
-    <div class="crow" role="row"><span role="cell">Set it up somewhere else</span><span role="cell">"Works on my machine"</span><span role="cell"><code>databricks bundle deploy</code>, same every time, from git</span></div>
-    <div class="crow" role="row"><span role="cell">Grow to many labs</span><span role="cell">A rewrite</span><span role="cell">The same code</span></div>
-  </div>
-  <p class="pull">The notebook answers "what went wrong last month?" Databricks answers "what went wrong last night?" every morning, without me in the loop.</p>
-  <details class="tradeoffs">
-    <summary>The tradeoffs I'm accepting</summary>
-    <ul>
-      <li>For one lab with 15 benches, this is more platform than the data needs. Postgres and Grafana would cover the dashboard.</li>
-      <li>Serverless startup adds a minute or two per step, so the job takes about 10 minutes for data that would fit on a laptop.</li>
-      <li>There's more to learn and set up: bundles, pipelines, Unity Catalog permissions.</li>
-      <li>The LLM call costs money and adds a little nondeterminism. That's why the analysis is in SQL and every report is saved with its trace.</li>
-      <li>The payoff is in running it every day and scaling to many labs, where keeping everything governed in one place starts to matter.</li>
-    </ul>
-  </details>
 </section>
 
-<!-- ================= USE IT ================= -->
-<section class="wrap section" id="use">
-  <div class="sec-head">
-    <h2>Run it on your lab's data</h2>
-    <p>If you run a hardware test lab, you can point NightShift at your own logs. It runs on Databricks Free Edition. Out of the box it generates a demo lab, so start there, then swap in your data.</p>
+<!-- Statement: the case for the platform, in one line -->
+<section class="section statement" id="why">
+  <div class="container">
+    <p class="say">A notebook answers what went wrong last month. Databricks answers what went wrong last night, every morning, without me.</p>
+    <p><a class="more" href="decisions.html#databricks">Why not just a Jupyter notebook</a></p>
   </div>
+</section>
 
-  <ol class="steps">
-    <li>
-      <h3>Deploy the demo</h3>
-      <p>Clone the repo and deploy the bundle. The first run builds a 15-bench demo lab so you can see the whole thing work end to end, report included.</p>
-<pre><code>git clone https://github.com/rpuranikx/NightShift
+<!-- Close: the deploy, beside the commands -->
+<section class="section band" id="use">
+  <div class="container close">
+    <div>
+      <h2>Run it on your lab’s data</h2>
+      <p class="lead">It runs on Databricks Free Edition. Deploy the demo lab first, then swap in your logs.</p>
+      <div class="actions">
+        <a class="btn primary" href="deploy.html">Read the setup guide</a>
+      </div>
+    </div>
+<pre class="term" aria-label="Deploy commands"><code>git clone https://github.com/rpuranikx/NightShift
 cd NightShift
-databricks auth login --host https://&lt;your-workspace&gt;.cloud.databricks.com
+databricks auth login --host https://&lt;your-workspace&gt;
 databricks bundle deploy
 databricks bundle run nightshift_nightly</code></pre>
-      <p class="small">Everything lands in <code>workspace.nightshift</code>. Raw files go in the volume <code>/Volumes/workspace/nightshift/raw_logs</code>.</p>
-    </li>
-
-    <li>
-      <h3>Export your logs into this shape</h3>
-      <p>Your bench PCs probably log differently. Write a small exporter that drops these files into the volume. Timestamps can be ISO or epoch seconds; silver handles both.</p>
-      <div class="contract">
-        <div class="file">
-          <div class="fname"><code>runs/&lt;date&gt;_&lt;bench&gt;.jsonl</code><span>one line per event, new files every night</span></div>
-<pre><code>{"event": "test_result", "result_id": "…", "run_id": "…",
- "bench_id": "DUO-03", "build_id": "B1005", "suite": "smoke",
- "test_name": "boot_to_home", "display": 2,
- "started_at": "2026-10-27T23:14:02", "duration_s": 88.4,
- "status": "FAIL", "error_message": "error: device offline",
- "screenshot_path": "…"}
-{"event": "watchdog_reboot", "run_id": "…", "bench_id": "DUO-03",
- "at": "1761607200", "reason": "no heartbeat for 15 min"}</code></pre>
-          <p class="small"><code>status</code> is PASS, FAIL or ERROR. <code>error_message</code> can be null. <code>result_id</code> must be unique per result; duplicates from retries are fine.</p>
-        </div>
-        <div class="file">
-          <div class="fname"><code>benches.csv</code><span>one row per bench</span></div>
-<pre><code>bench_id,display_count,pcm_link,pc_hostname,lab,commissioned_on
-DUO-03,2,molex,HIL-PC-11,Lab B,2025-03-02</code></pre>
-        </div>
-        <div class="file">
-          <div class="fname"><code>builds.json</code><span>the builds under test</span></div>
-<pre><code>[{"build_id": "B1005", "version": "v2.4.2",
-  "built_at": "2026-10-14T17:31:00", "release_night": 16}]</code></pre>
-        </div>
-        <div class="file">
-          <div class="fname"><code>ground_truth.csv</code><span>your starting labels</span></div>
-<pre><code>result_id,true_category
-…-smoke-boot_to_home-d2,hardware_adb</code></pre>
-          <p class="small">Categories are <code>script</code>, <code>framework</code>, <code>hardware_adb</code> and <code>real_defect</code>.</p>
-        </div>
-      </div>
-    </li>
-
-    <li>
-      <h3>Label a few weeks of past failures</h3>
-      <p>The model learns from your lab's own history. Most labs already have this in old triage notes or defect tickets: for each past failure, which of the four it turned out to be. A couple of thousand labeled failures is plenty to start. After that, the morning review queue keeps adding labels, and those win over the starting set.</p>
-    </li>
-
-    <li>
-      <h3>Turn off the demo pieces</h3>
-      <p>In <code>resources/nightshift.job.yml</code>, remove the <code>generate_logs</code> task and make <code>bronze_ingest</code> depend on <code>setup</code>. Then edit <code>src/checks/check_gold_tables.py</code>: it checks for the three problems planted in the demo data. Replace those with a few things you know are true about your lab, like "every bench reported last night", or remove the task.</p>
-<pre><code>- task_key: bronze_ingest
-  depends_on:
-    - task_key: setup</code></pre>
-    </li>
-
-    <li>
-      <h3>Run it when the logs arrive</h3>
-      <p>Instead of a fixed schedule, let the job start when the last bench uploads. Add a file arrival trigger to the job and redeploy.</p>
-<pre><code>nightshift_nightly:
-  trigger:
-    file_arrival:
-      url: /Volumes/workspace/nightshift/raw_logs/runs/</code></pre>
-    </li>
-
-    <li>
-      <h3>Each morning</h3>
-      <p>Read the report. Then open <code>05_triage_feedback</code>, go through the handful of low-confidence calls, and record the real cause in one line each. That's the only manual triage left, and it makes tomorrow's model better.</p>
-    </li>
-  </ol>
-  <p class="aside">Next on my list: a single demo flag in <code>databricks.yml</code> that does the "turn off the demo pieces" step for you.</p>
+  </div>
 </section>
 
 </main>
 
-<footer class="foot wrap">
-  <div>
-    <a class="mark" href="#top">Night<span>Shift</span></a>
-    <p>Built by Rishi Puranik. I build the Python framework we use for embedded hardware testing, and this is the tool I wish we had every morning.</p>
+<footer class="foot">
+  <div class="container">
+    <p class="foot-say">I build the Python framework we use for embedded hardware testing. This is the tool I wanted every morning.</p>
+    <div class="foot-row">
+      <span>Rishi Puranik. The data is synthetic, modeled on benches I work with.</span>
+      <nav aria-label="Footer">
+        <a href="https://github.com/rpuranikx/NightShift">Code</a>
+        <a href="decisions.html">Decisions</a>
+        <a href="deploy.html">Deploy</a>
+        <a href="https://github.com/rpuranikx">More of my work</a>
+      </nav>
+    </div>
   </div>
-  <nav>
-    <a href="https://github.com/rpuranikx/NightShift">Code on GitHub</a>
-    <a href="https://github.com/rpuranikx">More of my work</a>
-  </nav>
 </footer>
 
 <script src="site.js"></script>

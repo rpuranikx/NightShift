@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deploy NightShift on your lab’s data</title>
+<meta name="description" content="Deploy NightShift on Databricks Free Edition, run the demo lab, then point it at your own bench logs.">
+<meta name="theme-color" content="#0B2026">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B2026'/%3E%3Crect x='7' y='17' width='6' height='6' fill='%23FF3621'/%3E%3Crect x='15' y='17' width='6' height='6' fill='%233CF5C8'/%3E%3Crect x='15' y='9' width='6' height='6' fill='%233CF5C8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="doc-page">
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="mark" href="index.html" aria-label="NightShift home">Night<span>Shift</span></a>
+    <nav aria-label="Site">
+      <a href="index.html#how">How it works</a>
+      <a href="decisions.html">Decisions</a>
+      <a href="deploy.html" aria-current="page">Deploy</a>
+      <a href="https://github.com/rpuranikx/NightShift">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="doc-hero">
+  <div class="container doc-grid">
+    <div>
+      <h1>Deploy it on your lab</h1>
+      <p class="lead">Runs on Databricks Free Edition. Demo lab first, then your logs.</p>
+    </div>
+    <nav class="toc" aria-label="On this page">
+      <a href="#demo">Deploy the demo</a>
+      <a href="#format">Log format</a>
+      <a href="#labels">Labels</a>
+      <a href="#switch">Switch to your data</a>
+      <a href="#daily">Every morning</a>
+    </nav>
+  </div>
+</section>
+
+<section class="doc-section step" id="demo">
+  <div class="container doc-grid">
+    <h2><span class="n">1</span>Deploy the demo</h2>
+    <div>
+        <p>The first run builds a 15-bench demo lab so you can watch the whole job work, report included.</p>
+<pre><code>git clone https://github.com/rpuranikx/NightShift
+cd NightShift
+databricks auth login --host https://&lt;your-workspace&gt;.cloud.databricks.com
+databricks bundle deploy
+databricks bundle run nightshift_nightly</code></pre>
+        <p class="small">Tables land in <code>workspace.nightshift</code>. Raw files go in <code>/Volumes/workspace/nightshift/raw_logs</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section step" id="format">
+  <div class="container doc-grid">
+    <h2><span class="n">2</span>Export your logs in this shape</h2>
+    <div>
+        <p>Your bench PCs probably log differently. Write a small exporter that drops these files in the volume. Timestamps can be ISO or epoch seconds.</p>
+        <div class="files">
+          <div class="file wide">
+            <p class="fname"><code>runs/&lt;date&gt;_&lt;bench&gt;.jsonl</code> one line per event, new files every night</p>
+<pre><code>{"event": "test_result", "result_id": "…", "run_id": "…",
+ "bench_id": "DUO-03", "build_id": "B1005", "suite": "smoke",
+ "test_name": "boot_to_home", "display": 2,
+ "started_at": "2026-10-27T23:14:02", "duration_s": 88.4,
+ "status": "FAIL", "error_message": "error: device offline",
+ "screenshot_path": "…"}
+{"event": "watchdog_reboot", "run_id": "…", "bench_id": "DUO-03",
+ "at": "1761607200", "reason": "no heartbeat for 15 min"}</code></pre>
+            <p class="small"><code>status</code> is PASS, FAIL or ERROR. <code>error_message</code> can be null. <code>result_id</code> is unique per result; retried duplicates are fine.</p>
+          </div>
+          <div class="file">
+            <p class="fname"><code>benches.csv</code> one row per bench</p>
+<pre><code>bench_id,display_count,pcm_link,pc_hostname,lab,commissioned_on
+DUO-03,2,molex,HIL-PC-11,Lab B,2025-03-02</code></pre>
+          </div>
+          <div class="file">
+            <p class="fname"><code>builds.json</code> the builds under test</p>
+<pre><code>[{"build_id": "B1005", "version": "v2.4.2",
+  "built_at": "2026-10-14T17:31:00", "release_night": 16}]</code></pre>
+          </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section step" id="labels">
+  <div class="container doc-grid">
+    <h2><span class="n">3</span>Label a few weeks of failures</h2>
+    <div>
+        <p>The model learns from your lab’s history. Most labs already have it in old triage notes or defect tickets. A couple of thousand labeled failures is plenty, and the review queue adds more every morning.</p>
+<pre><code>ground_truth.csv
+result_id,true_category
+…-smoke-boot_to_home-d2,hardware_adb</code></pre>
+        <p class="small">Categories are <code>script</code>, <code>framework</code>, <code>hardware_adb</code> and <code>real_defect</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section step" id="switch">
+  <div class="container doc-grid">
+    <h2><span class="n">4</span>Switch off the demo pieces</h2>
+    <div>
+        <p>In <code>resources/nightshift.job.yml</code>, remove the <code>generate_logs</code> task and make <code>bronze_ingest</code> depend on <code>setup</code>. Then replace the checks in <code>src/checks/check_gold_tables.py</code> with things you know are true about your lab, like every bench reported last night.</p>
+<pre><code>- task_key: bronze_ingest
+  depends_on:
+    - task_key: setup</code></pre>
+        <p>To run when the logs arrive instead of on a schedule, add a file arrival trigger and redeploy.</p>
+<pre><code>nightshift_nightly:
+  trigger:
+    file_arrival:
+      url: /Volumes/workspace/nightshift/raw_logs/runs/</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section step" id="daily">
+  <div class="container doc-grid">
+    <h2><span class="n">5</span>Every morning</h2>
+    <div>
+        <p>Read the report. Then open <code>05_triage_feedback</code> and record the real cause for the handful of unsure calls. That’s the only manual triage left, and it makes tomorrow’s model better.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="container">
+    <div class="foot-row">
+      <span>Next on my list: one demo flag in <code>databricks.yml</code> that does the switch for you.</span>
+      <nav aria-label="Footer">
+        <a href="index.html">Overview</a>
+        <a href="decisions.html">Decisions</a>
+        <a href="https://github.com/rpuranikx/NightShift">Code</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
