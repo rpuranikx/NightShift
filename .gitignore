@@ -1,2 +1,5 @@
 .databricks/
 .vscode/
+# Hallmark design-check output
+.hallmark/
+docs/.hallmark/
