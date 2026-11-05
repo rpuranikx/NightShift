@@ -10,6 +10,7 @@
 /* Hallmark · waive 77 · doc pages only, the body column is eight of twelve with the head beside it · a reading measure for prose and code, not a landing section */
 /* Hallmark · dismissed 58 · the two doc pages are reference reading by request; on the home page about 120 words are the sample report, shown as an exhibit */
 /* Hallmark · waive 79 · index.html only, the hero is centred in a full-height first screen with the film on eight of twelve columns · a bigger film would push the headline and actions past the 1280x800 fold */
+/* Hallmark · waive 38iii · .story-steps h3 .o is display: block, a whole second line in the accent, never a word inside a line · Rishi picked this two-line head in the scroll story prototype */
 /* Hallmark · note: the draw left out Band; .band here is only a paper change behind the map and the close, not a full-bleed colour band */
 @import url("./tokens.css");
 @import url("./base.css");
@@ -71,6 +72,36 @@ a:hover { color: var(--color-ink); text-decoration-color: var(--color-accent); }
 .compare tbody th { font-weight: 400; font-size: var(--text-md); color: var(--color-muted); width: 22%; }
 .compare td { color: var(--color-ink-2); width: 39%; }
 .compare td.yes { color: var(--color-ink); font-weight: 600; }
+
+/* How it works: the scroll story. Plain by default; .is-live turns it on once the scene is running */
+.story { background: var(--color-paper); padding-block: calc(var(--section-gap-s) * 0.6); }
+.story-canvas, .story-bar { display: none; }
+.story-panel { display: grid; gap: var(--space-xl); }
+.story-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap-columns); }
+.story-steps li { display: grid; gap: var(--space-xs); align-content: start; }
+.story-steps .t { font-family: var(--font-outlier); font-size: var(--text-sm); color: var(--color-signal); }
+.story-steps h3 { font-size: var(--text-title); }
+.story-steps h3 .o { color: inherit; }
+.story-steps p:not(.t) { color: var(--color-ink-2); }
+.story-fallback { margin-top: var(--space-xl); }
+.story.is-live { padding: 0; }
+.story.is-live .story-track { height: 400vh; }
+.story.is-live .story-stick { position: sticky; top: var(--nav-h); height: calc(100vh - var(--nav-h)); height: calc(100svh - var(--nav-h)); overflow: hidden; }
+.story.is-live .story-canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+.story.is-live .story-fallback { display: none; }
+.story.is-live .story-panel { position: relative; height: 100%; align-content: center; pointer-events: none; }
+.story.is-live .story-panel h2 { position: absolute; left: var(--gutter); top: var(--space-xl); font-size: var(--text-lg); font-weight: 600; letter-spacing: 0; color: var(--color-muted); }
+.story.is-live .story-steps { display: block; position: relative; width: min(26rem, 40%); min-height: 18rem; }
+.story.is-live .story-steps li { position: absolute; inset: 0 auto auto 0; opacity: 0; transform: translateY(16px); transition: opacity var(--dur-long) var(--ease-out), transform var(--dur-long) var(--ease-out); }
+.story.is-live .story-steps li.on { opacity: 1; transform: none; }
+.story.is-live .story-steps h3 { font-size: var(--text-section); font-weight: 800; letter-spacing: var(--tracking-display); line-height: 1.02; }
+.story.is-live .story-steps h3 .o { display: block; color: var(--color-accent); }
+.story.is-live .story-steps p:not(.t) { font-size: var(--text-lg); color: var(--color-ink-2); }
+.story.is-live .story-bar { display: flex; gap: var(--space-xs); position: absolute; left: var(--gutter); bottom: var(--space-xl); }
+.story.is-live .story-stick::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, var(--color-paper) 0%, color-mix(in oklab, var(--color-paper) 85%, transparent) 28%, transparent 52%); }
+.story.is-live .story-panel { z-index: 1; }
+.story-bar i { display: block; width: 40px; height: 3px; background: var(--color-rule); transition: background-color var(--dur-short) var(--ease-out); }
+.story-bar i.on { background: var(--color-accent); }
 
 /* The map */
 .map { margin: 0; overflow-x: auto; }
@@ -190,6 +221,7 @@ a:hover { color: var(--color-ink); text-decoration-color: var(--color-accent); }
 .fname { font-size: var(--text-sm); color: var(--color-muted); }
 
 @media (max-width: 60rem) {
+  .story-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hero-grid, .rows-wrap, .close, .doc-grid { grid-template-columns: minmax(0, 1fr); }
   .hero-text, .film, .head.side, .rows { grid-column: 1 / -1; }
   .hero { padding-top: var(--space-xl); }
@@ -197,6 +229,12 @@ a:hover { color: var(--color-ink); text-decoration-color: var(--color-accent); }
   .toc { align-self: start; }
 }
 @media (max-width: 40rem) {
+  .story.is-live .story-stick::after { background: linear-gradient(to bottom, transparent 40%, var(--color-paper) 72%); }
+  .story.is-live .story-panel { align-content: end; padding-bottom: calc(var(--space-2xl) + var(--space-md)); }
+  .story-steps { grid-template-columns: minmax(0, 1fr); }
+  .story.is-live .story-steps { width: 100%; min-height: 15rem; }
+  .story.is-live .story-steps h3 { font-size: var(--text-2xl); }
+  .story.is-live .story-steps p:not(.t) { font-size: var(--text-md); }
   .nav nav { gap: var(--space-md); }
   .nav nav a[href$="#how"] { display: none; }
   .film { aspect-ratio: 4 / 5; }

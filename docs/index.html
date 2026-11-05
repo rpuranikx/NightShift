@@ -75,14 +75,23 @@
   </div>
 </section>
 
-<!-- The map: the signature, the pipeline drawn from the real job -->
-<section class="section band" id="how">
-  <div class="container">
-    <div class="head">
-      <h2>Logs in, plan out</h2>
-      <p class="lead">One Databricks job runs it all overnight, from raw logs to the report.</p>
-    </div>
-    <figure class="map">
+<!-- How it works: a scroll story in the film's wireframe world. Without JS or with reduced motion, the steps and the map show as a plain section. -->
+<section class="story" id="how" aria-labelledby="how-title">
+  <div class="story-track">
+    <div class="story-stick">
+      <canvas class="story-canvas" aria-hidden="true"></canvas>
+      <div class="container story-panel">
+        <h2 id="how-title">Logs in, plan out</h2>
+        <ol class="story-steps">
+          <li><p class="t">23:00</p><h3>61 failures <span class="o">overnight</span></h3><p>Fifteen benches, one night, and nobody has looked at any of them yet.</p></li>
+          <li><p class="t">00:40</p><h3>Raw, clean, <span class="o">then patterns</span></h3><p>Bronze keeps the logs as written. Silver cleans them. Gold finds flaky tests and bad builds, and checks stop the job if the tables look wrong.</p></li>
+          <li><p class="t">02:00</p><h3>Every failure <span class="o">gets a cause</span></h3><p>The model calls each one script, framework, hardware or real defect. The unsure ones go to a person.</p></li>
+          <li><p class="t">06:00</p><h3>The plan <span class="o">is waiting</span></h3><p>The agent writes the morning report from what SQL already decided. One Databricks job ran all of it.</p></li>
+        </ol>
+        <div class="story-bar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="container story-fallback">
+        <figure class="map">
       <svg viewBox="0 0 1200 330" role="img" aria-labelledby="map-title">
         <title id="map-title">Bench logs flow through bronze, silver and gold tables, a data check, the triage model and the morning agent into the report. Engineers review low-confidence calls, and those labels train the model.</title>
         <defs>
@@ -110,6 +119,8 @@
         <text class="note" x="700" y="300">corrections train the model</text>
       </svg>
     </figure>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -206,5 +217,6 @@
 </footer>
 
 <script src="site.js"></script>
+<script type="module" src="how.js"></script>
 </body>
 </html>
